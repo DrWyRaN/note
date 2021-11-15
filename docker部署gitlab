@@ -1,0 +1,43 @@
+docker run 
+-itd / 
+-p 9980:80 /
+-p 9922:22 /
+-v /usr/local/gitlab-test/etc:/etc/gitlab /
+-v /usr/local/gitlab-test/log:/var/log/gitlab /
+-v /usr/local/gitlab-test/opt:/var/opt/gitlab /
+--restart always /
+--privileged=true /
+--name gitlab-middleware gitlab/gitlab-ce
+
+docker run 
+-itd ^ 
+-p 9980:80 ^
+-p 9922:22 ^
+-v /usr/local/gitlab-test/etc:/etc/gitlab ^
+-v /usr/local/gitlab-test/log:/var/log/gitlab ^
+-v /usr/local/gitlab-test/opt:/var/opt/gitlab ^
+--restart always ^
+--privileged=true ^
+--name gitlab-middleware gitlab/gitlab-ce
+
+docker exec -it gitlab-middleware /bin/bash
+
+ 打开文件
+vi /etc/gitlab/gitlab.rb
+ 
+external_url 'http://192.168.52.128:9980'
+gitlab_rails['gitlab_ssh_host'] = '192.168.52.128'
+gitlab_rails['gitlab_shell_ssh_port'] = 9922
+
+vi /opt/gitlab/embedded/service/gitlab-rails/config/gitlab.yml
+# 配置解释：
+# host：访问的IP
+# port：访问的端口
+# 以上两个和gitlab.rb内external_url的配置保持一致
+ 
+# ssh_host：ssh主机ip，和gitlab.rb内gitlab_rails['gitlab_ssh_host']保持一致
+# 配置二：找到gitlab_shell标签下的ssh_port，将其修改为9922
+#（和gitlab.rb内gitlab_rails['gitlab_shell_ssh_port'] 保持一致）
+
+gitlab-ctl reconfigure
+gitlab-ctl restart
